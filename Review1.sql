@@ -99,8 +99,8 @@ SELECT MAX(Price) AS LargestPrice
 FROM Products;
 
 #12 Like
-#% - The percent sign represents zero, one, or multiple characters
-#_ - The underscore represents a single character
+# % - The percent sign represents zero, one, or multiple characters
+# _ - The underscore represents a single character
 SELECT column1, column2, ...
 FROM table_name
 WHERE columnN LIKE pattern;
@@ -116,6 +116,48 @@ WHERE columnN LIKE pattern;
 #example
 SELECT * FROM Customers
 WHERE CustomerName LIKE 'a%';
+
+#13 IN
+SELECT column_name(s)
+FROM table_name
+WHERE column_name IN (value1,value2,...);
+
+# In 与 = 转换
+select * from Websites where name in ('Google','菜鸟教程');
+select * from Websites where name = 'Google' or name = '菜鸟教程';
+
+# Between (请注意，在不同的数据库中，BETWEEN 操作符会产生不同的结果！)
+SELECT column_name(s)
+FROM table_name
+WHERE column_name BETWEEN value1 AND value2;
+
+SELECT * FROM Websites
+WHERE alexa NOT BETWEEN 1 AND 20;
+
+SELECT * FROM Websites
+WHERE name BETWEEN 'A' AND 'H';
+
+SELECT * FROM access_log
+WHERE date BETWEEN '2016-05-10' AND '2016-05-14';
+
+# SQL别名
+# Column
+-- 在下面的情况下，使用别名很有用：
+-- 在查询中涉及超过一个表
+-- 在查询中使用了函数
+-- 列名称很长或者可读性差
+-- 需要把两个列或者多个列结合在一起
+SELECT column_name AS alias_name
+FROM table_name;
+
+# Table
+SELECT column_name(s)
+FROM table_name AS alias_name;
+
+# Join (INNER JOIN)
+
+
+
 
 
 
