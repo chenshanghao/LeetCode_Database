@@ -1,3 +1,14 @@
+# 数据库（database）保存有组织的数据的容器（通常是一个文件或一组文件）。
+# 表（table）某种特定类型数据的结构化清单。
+# 列（column）表中的一个字段。所有表都是由一个或多个列组成的。
+
+# 主键（primary key）一列（或一组列），其值能够唯一标识表中每一行。
+-- 任意两行都不具有相同的主键值；
+-- 每一行都必须具有一个主键值（主键列不允许NULL值）；
+-- 主键列中的值不允许修改或更新；
+-- 主键值不能重用（如果某行从表中删除，它的主键不能赋给以后的新行）。
+
+
 
 #1. select
 SELECT * FROM Customers;
@@ -11,7 +22,7 @@ FROM table_name;
 SELECT DISTINCT column1, column2, ...
 FROM table_name;
 
-#3. where
+#3. where 可以增加多个过滤条件，每个条件间都要使用A ND关键字。
 SELECT column1, column2, ...
 FROM table_name
 WHERE condition;
@@ -65,6 +76,10 @@ SELECT column_names
 FROM table_name
 WHERE column_name IS NULL;
 
+SELECT column_names
+FROM table_name
+WHERE column_name IS NOT NULL;
+
 #8 Update
 UPDATE table_name
 SET column1=value1, column2=value2, ...
@@ -98,9 +113,14 @@ WHERE condition;
 SELECT MAX(Price) AS LargestPrice
 FROM Products;
 
-#12 Like
-# % - The percent sign represents zero, one, or multiple characters
+#12 Like wildcard（通配符）
+# % - The percent sign represents zero, one, or multiple characters 通配符%看起来像是可以匹配任何东西，但有个例外，这就是NULL。
 # _ - The underscore represents a single character
+-- 正如所见，SQL的通配符很有用。但这种功能是有代价的，即通配符搜索一般比前面讨论的其他搜索要耗费更长的处理时间。这里给出一些使
+-- 用通配符时要记住的技巧。
+-- 不要过度使用通配符。如果其他操作符能达到相同的目的，应该使用其他操作符。
+-- 在确实需要使用通配符时，也尽量不要把它们用在搜索模式的开始处。把通配符置于开始处，搜索起来是最慢的。
+-- 仔细注意通配符的位置。如果放错地方，可能不会返回想要的数据。
 SELECT column1, column2, ...
 FROM table_name
 WHERE columnN LIKE pattern;
@@ -112,12 +132,26 @@ WHERE columnN LIKE pattern;
 #WHERE CustomerName LIKE '_r%'   Finds any values that have "r" in the second position
 #WHERE CustomerName LIKE 'a_%_%' Finds any values that starts with "a" and are at least 3 characters in length
 #WHERE ContactName LIKE 'a%o'    Finds any values that starts with "a" and ends with "o"
-
+# Not like 'a%'                  Finds any values that not start with the letter "a".
 #example
 SELECT * FROM Customers
 WHERE CustomerName LIKE 'a%';
 
-#13 IN
+# Using the [charlist] Wildcard
+# The following SQL statement selects all customers with a City starting with "b", "s", or "p":
+SELECT * FROM Customers
+WHERE City LIKE '[bsp]%';
+
+# The two following SQL statements select all customers with a City NOT starting with "b", "s", or "p":
+SELECT * FROM Customers
+WHERE City LIKE '[!bsp]%';
+
+
+#13 
+-- 在有很多合法选项时，IN操作符的语法更清楚，更直观。
+-- 在与其他A ND和OR操作符组合使用IN时，求值顺序更容易管理。
+-- IN操作符一般比一组OR操作符执行得更快（在上面这个合法选项很少的例子中，你看不出性能差异）。
+-- IN的最大优点是可以包含其他SELECT语句，能够更动态地建立WHERE子句
 SELECT column_name(s)
 FROM table_name
 WHERE column_name IN (value1,value2,...);
@@ -155,6 +189,238 @@ SELECT column_name(s)
 FROM table_name AS alias_name;
 
 # Join (INNER JOIN)
+
+# Group BY
+SELECT column_name(s)
+FROM table_name
+WHERE condition
+GROUP BY column_name(s)
+ORDER BY column_name(s);
+
+# The following SQL statement lists the number of customers in each country, sorted high to low:
+SELECT COUNT(CustomerID), Country
+FROM Customers
+GROUP BY Country
+ORDER BY COUNT(CustomerID) DESC;
+
+# Having Clause
+SELECT column_name(s)
+FROM table_name
+WHERE condition
+GROUP BY column_name(s)
+HAVING condition
+ORDER BY column_name(s);
+
+# SQL EXISTS Examples
+SELECT column_name(s)
+FROM table_name
+WHERE EXISTS
+(SELECT column_name FROM table_name WHERE condition);
+
+# The following SQL statement returns TRUE and lists the suppliers with a product price equal to 22:
+SELECT SupplierName
+FROM Suppliers
+WHERE EXISTS (SELECT ProductName FROM Products WHERE SupplierId = Suppliers.supplierId AND Price = 22);
+
+# The SQL ANY and ALL Operators
+SELECT column_name(s)
+FROM table_name
+WHERE column_name operator ANY
+(SELECT column_name FROM table_name WHERE condition);
+
+SELECT column_name(s)
+FROM table_name
+WHERE column_name operator ALL
+(SELECT column_name FROM table_name WHERE condition);
+
+
+# SQL SELECT INTO Statement
+# The SELECT INTO statement copies data from one table into a new table.
+SELECT column1, column2, column3, ...
+INTO newtable [IN externaldb]
+FROM oldtable
+WHERE condition;
+
+SELECT * INTO CustomersBackup2017 IN 'Backup.mdb'
+FROM Customers;
+
+SELECT * INTO CustomersGermany
+FROM Customers
+WHERE Country = 'Germany';
+
+# SQL INSERT INTO SELECT Statement
+# The INSERT INTO SELECT statement copies data from one table and inserts it into another table.
+INSERT INTO table2
+SELECT * FROM table1
+WHERE condition;
+
+# SQL CASE Statement
+# The CASE statement goes through conditions and return a value when the first condition is met.
+# If there is no ELSE part and no conditions are true, it returns NULL.
+CASE
+    WHEN condition1 THEN result1
+    WHEN condition2 THEN result2
+    WHEN conditionN THEN resultN
+    ELSE result
+END;
+
+SELECT OrderID, Quantity,
+CASE WHEN Quantity > 30 THEN "The quantity is greater than 30"
+WHEN Quantity = 30 THEN "The quantity is 30"
+ELSE "The quantity is under 30"
+END FROM OrderDetails;
+
+# SQL IFNULL(), ISNULL(), COALESCE(), and NVL() Functions
+SELECT ProductName, UnitPrice * (UnitsInStock + IFNULL(UnitsOnOrder, 0))
+FROM Products
+
+# SQL Stored Procedures for SQL Server
+CREATE PROCEDURE procedure_name
+AS
+sql_statement
+GO;
+
+# Example
+CREATE PROCEDURE SelectAllCustomers @City nvarchar(30), @PostalCode nvarchar(10)
+AS
+SELECT * FROM Customers WHERE City = @City AND PostalCode = @PostalCode
+GO;
+
+EXEC SelectAllCustomers City = "London", PostalCode = "WA1 1DP";
+
+# SQL Comments
+--Select all:
+SELECT * FROM Customers;
+
+# SQL CREATE DATABASE Statement
+CREATE DATABASE databasename;
+
+# The SQL DROP DATABASE Statement
+DROP DATABASE databasename;
+
+# SQL BACKUP DATABASE for SQL Server
+BACKUP DATABASE databasename
+TO DISK = 'filepath';
+
+# The SQL CREATE TABLE Statement
+CREATE TABLE table_name (
+    column1 datatype,
+    column2 datatype,
+    column3 datatype,
+   ....
+);
+
+CREATE TABLE Persons (
+    PersonID int,
+    LastName varchar(255),
+    FirstName varchar(255),
+    Address varchar(255),
+    City varchar(255) 
+);
+
+# SQL DROP TABLE Statement
+DROP TABLE table_name;
+
+# SQL ALTER TABLE Statement
+ALTER TABLE table_name
+ADD column_name datatype;
+
+-----------------------------------------------------------------------------------------
+# SQL Constraints
+CREATE TABLE table_name (
+    column1 datatype constraint,
+    column2 datatype constraint,
+    column3 datatype constraint,
+    ....
+);
+
+-- NOT NULL - Ensures that a column cannot have a NULL value
+CREATE TABLE Persons (
+    ID int NOT NULL,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255) NOT NULL,
+    Age int
+);
+
+-- UNIQUE - Ensures that all values in a column are different
+CREATE TABLE Persons (
+    ID int NOT NULL UNIQUE,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int
+);
+
+-- PRIMARY KEY - A combination of a NOT NULL and UNIQUE. Uniquely identifies each row in a table
+CREATE TABLE Persons (
+    ID int NOT NULL,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int,
+    PRIMARY KEY (ID)
+);
+
+-- FOREIGN KEY - Uniquely identifies a row/record in another table
+-- 1.主键是能确定一条记录的唯一标识。比如，一条记录包括身份证号码，姓名，年龄。身份证号码是唯一确认你这个人的，其他的都可能有重复，所以身份证号码是主键。
+-- 外键用于与另一张表相关联。是能确认另一张表记录的字段，用于保持数据的一致性。比如，A表中的一个字段，是B表的主键，那它就可以是A表的外键。
+
+-- CHECK - Ensures that all values in a column satisfies a specific condition
+CREATE TABLE Persons (
+    ID int NOT NULL,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int,
+    CHECK (Age>=18)
+);
+
+-- DEFAULT - Sets a default value for a column when no value is specified
+
+CREATE TABLE Persons (
+    ID int NOT NULL,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int,
+    City varchar(255) DEFAULT 'Sandnes'
+);
+
+-- INDEX - Used to create and retrieve data from the database very quickly
+CREATE INDEX idx_lastname
+ON Persons (LastName);
+
+-- SQL AUTO INCREMENT Field -- Auto-increment allows a unique number to be generated automatically when a new record is inserted into a table.
+CREATE TABLE Persons (
+    ID int NOT NULL AUTO_INCREMENT,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int,
+    PRIMARY KEY (ID)
+);
+-----------------------------------------------------------------------------------------
+
+## SQL Dates
+-- MySQL comes with the following data types for storing a date or a date/time value in the database:
+-- DATE - format YYYY-MM-DD
+-- DATETIME - format: YYYY-MM-DD HH:MI:SS
+-- TIMESTAMP - format: YYYY-MM-DD HH:MI:SS
+-- YEAR - format YYYY or YY
+
+# SQL Views
+# In SQL, a view is a virtual table based on the result-set of an SQL statement.
+CREATE VIEW view_name AS
+SELECT column1, column2, ...
+FROM table_name
+WHERE condition;
+
+# SQL Injection
+-- https://baike.baidu.com/item/SQL%E6%B3%A8%E5%85%A5
+-- SQL injection is a code injection technique that might destroy your database.
+-- SQL injection is one of the most common web hacking techniques.
+-- SQL injection is the placement of malicious code in SQL statements, via web page input.
+
+# sql hosting
+-- If you want your web site to be able to store and retrieve data from a database, your web server should have access to a database-system that uses the SQL language.
+-- If your web server is hosted by an Internet Service Provider (ISP), you will have to look for SQL hosting plans.
+-- The most common SQL hosting databases are MS SQL Server, Oracle, MySQL, and MS Access.
+
 
 
 
