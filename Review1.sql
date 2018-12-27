@@ -105,6 +105,16 @@ LIMIT number;
 SELECT * FROM Customers
 LIMIT 3;
 
+# 常用的文本处理函数
+-- LEFT()（或使用子字符串函数） 返回字符串左边的字符
+-- LENGTH()（也使用DATALENGTH()或LEN()） 返回字符串的长度
+-- LOWER()（Access使用LCASE()） 将字符串转换为小写
+-- LTRIM() 去掉字符串左边的空格
+-- RIGHT()（或使用子字符串函数） 返回字符串右边的字符
+-- RTRIM() 去掉字符串右边的空格
+-- SOUNDEX() 返回字符串的SOUNDEX值
+-- UPPER()（Access使用UCASE()） 将字符串转换为大写
+
 #11 Min and Max
 SELECT Max(column_name)
 FROM table_name
@@ -112,6 +122,17 @@ WHERE condition;
 #exapmle
 SELECT MAX(Price) AS LargestPrice
 FROM Products;
+
+-- 1）AVG()函数忽略列值为NULL的行。
+-- 2）使用COUNT(*)对表中行的数目进行计数，不管表列中包含的是空值（NULL）还是非空值。
+-- 3）使用COUNT(column)对特定列中具有值的行进行计数，忽略NULL值。
+-- 4）MAX(), MIN()函数忽略列值为NULL的行
+-- 4）SUM()函数忽略列值为NULL的行。
+
+SELECT AVG(DISTINCT prod_price) AS avg_price
+FROM Products
+WHERE vend_id = 'DLL01';
+
 
 #12 Like wildcard（通配符）
 # % - The percent sign represents zero, one, or multiple characters 通配符%看起来像是可以匹配任何东西，但有个例外，这就是NULL。
@@ -191,6 +212,16 @@ FROM table_name AS alias_name;
 # Join (INNER JOIN)
 
 # Group BY
+-- 在使用GROUP BY子句前，需要知道一些重要的规定。
+-- 1. GROUP BY子句可以包含任意数目的列，因而可以对分组进行嵌套，更细致地进行数据分组。
+-- 2. 如果在GROUP BY子句中嵌套了分组，数据将在最后指定的分组上进行汇总。换句话说，在建立分组时，指定的所有列都一起计算（所以
+-- 3. 不能从个别的列取回数据）。
+-- 4. GROUP BY子句中列出的每一列都必须是检索列或有效的表达式（但不能是聚集函数）。如果在SELECT中使用表达式，则必须在GROUP
+-- 5. BY子句中指定相同的表达式。不能使用别名。
+-- 6. 大多数SQL实现不允许GROUP BY列带有长度可变的数据类型（如文本或备注型字段）。
+-- 7. 除聚集计算语句外，SELECT语句中的每一列都必须在GROUP BY子句中给出。
+-- 8, 如果分组列中包含具有NULL值的行，则NULL将作为一个分组返回。如果列中有多行NULL值，它们将分为一组。
+-- 9. GROUP BY子句必须出现在WHERE子句之后，ORDER BY子句之前。
 SELECT column_name(s)
 FROM table_name
 WHERE condition
@@ -203,7 +234,10 @@ FROM Customers
 GROUP BY Country
 ORDER BY COUNT(CustomerID) DESC;
 
-# Having Clause
+# Having 
+-- 说明：HAVING和WHERE的差别
+-- 这里有另一种理解方法，WHERE在数据分组前进行过滤，HA VING在数据分组后进行过滤。这是一个重要的区别，WHERE排除的行不包括
+-- 在分组中。这可能会改变计算值，从而影响HA VING子句中基于这些值过滤掉的分组。
 SELECT column_name(s)
 FROM table_name
 WHERE condition
