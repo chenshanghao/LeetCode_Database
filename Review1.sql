@@ -236,7 +236,7 @@ ORDER BY COUNT(CustomerID) DESC;
 
 # Having 
 -- 说明：HAVING和WHERE的差别
--- 这里有另一种理解方法，WHERE在数据分组前进行过滤，HA VING在数据分组后进行过滤。这是一个重要的区别，WHERE排除的行不包括
+-- 这里有另一种理解方法，WHERE在数据分组前进行过滤，HAVING在数据分组后进行过滤。这是一个重要的区别，WHERE排除的行不包括
 -- 在分组中。这可能会改变计算值，从而影响HA VING子句中基于这些值过滤掉的分组。
 SELECT column_name(s)
 FROM table_name
